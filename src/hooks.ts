@@ -1,6 +1,10 @@
-import { getString, initLocale } from "./utils/locale";
-import { createZToolkit } from "./utils/ztoolkit";
-import { registerPrefPanes, registerPrefsScripts } from "./modules/preference";
+import {
+  clipboardExample,
+  dialogExample,
+  filePickerExample,
+  progressWindowExample,
+  vtableExample,
+} from "./examples/helpers";
 import {
   exampleShortcutLargerCallback,
   exampleShortcutSmallerCallback,
@@ -15,17 +19,17 @@ import {
   registerReaderItemPaneSection,
 } from "./modules/item-pane";
 import {
-  dialogExample,
-  clipboardExample,
-  filePickerExample,
-  progressWindowExample,
-  vtableExample,
-} from "./examples/helpers";
-import { exampleNotifierCallback, registerNotifier } from "./modules/notifier";
-import {
   registerExtraColumn,
   registerExtraColumnWithCustomCell,
 } from "./modules/item-tree";
+import { exampleNotifierCallback, registerNotifier } from "./modules/notifier";
+import { registerPrefPanes, registerPrefsScripts } from "./modules/preference";
+import {
+  initLocale,
+  registerMainWindowLocale,
+  unregisterMainWindowLocale,
+} from "./utils/locale";
+import { createZToolkit } from "./utils/ztoolkit";
 
 async function onStartup() {
   await Promise.all([
@@ -62,9 +66,7 @@ async function onMainWindowLoad(win: _ZoteroTypes.MainWindow): Promise<void> {
   // Create ztoolkit for every window
   addon.data.ztoolkit = createZToolkit();
 
-  win.MozXULElement.insertFTLIfNeeded(
-    `${addon.data.config.addonRef}-mainWindow.ftl`,
-  );
+  registerMainWindowLocale(win);
 
   /** --- Examples start --- */
   // Stylesheet
@@ -75,6 +77,7 @@ async function onMainWindowLoad(win: _ZoteroTypes.MainWindow): Promise<void> {
 
 async function onMainWindowUnload(win: _ZoteroTypes.MainWindow): Promise<void> {
   unregisterStyleSheetFromWindow(win);
+  unregisterMainWindowLocale(win);
   ztoolkit.unregisterAll();
   addon.data.dialog?.window?.close();
 }
@@ -121,7 +124,6 @@ async function onPrefsEvent(type: string, data: { [key: string]: any }) {
       registerPrefsScripts(data.window);
       break;
     default:
-      return;
   }
 }
 
